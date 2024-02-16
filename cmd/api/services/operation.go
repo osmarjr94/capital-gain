@@ -1,6 +1,6 @@
 package services
 
-import (
+/*import (
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -64,3 +64,4 @@ func main() {
 		os.Exit(1)
 	}
 }
+*/
