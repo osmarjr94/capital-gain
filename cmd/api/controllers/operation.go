@@ -20,7 +20,7 @@ func (c *OperationController) CalculateTaxes(operations []models.Operation) []mo
 		if op.Operation == "buy" {
 			boughtShares += op.Quantity
 			weightedAverage = ((float64(boughtShares-op.Quantity) * weightedAverage) + (float64(op.Quantity) * op.UnitCost)) / float64(boughtShares)
-			taxResults = append(taxResults, TaxResult{Tax: 0})
+			taxResults = append(taxResults, []models.TaxResult{Tax: 0})
 		} else if op.Operation == "sell" {
 			if op.Quantity > boughtShares {
 				continue
@@ -29,7 +29,7 @@ func (c *OperationController) CalculateTaxes(operations []models.Operation) []mo
 			var tax int
 			totalCost := op.UnitCost * float64(op.Quantity)
 			if totalCost <= 20000 {
-				taxResults = append(taxResults, TaxResult{Tax: 0})
+				taxResults = append(taxResults, []models.TaxResult{Tax: 0})
 				continue
 			}
 
@@ -37,7 +37,7 @@ func (c *OperationController) CalculateTaxes(operations []models.Operation) []mo
 				profit := totalCost - (weightedAverage * float64(op.Quantity))
 				tax = int(profit * 0.20)
 			}
-			taxResults = append(taxResults, TaxResult{Tax: tax})
+			taxResults = append(taxResults, []models.TaxResult{Tax: tax})
 
 			boughtShares -= op.Quantity
 		}
@@ -60,9 +60,9 @@ func operationScanner() {
 
 	oc := OperationController{}
 	for _, line := range input {
-		var operations []Operation
+		var operations []models.Operation
 		if err := json.Unmarshal([]byte(line), &operations); err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing JSON: %v\n", err)
+			fmt.Println(os.Stderr, "Error parsing JSON: %v\n", err)
 			continue
 		}
 
@@ -70,7 +70,7 @@ func operationScanner() {
 
 		taxResultsJSON, err := json.Marshal(taxResults)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error marshalling JSON: %v\n", err)
+			fmt.Println(os.Stderr, "Error marshalling JSON: %v\n", err)
 			continue
 		}
 
