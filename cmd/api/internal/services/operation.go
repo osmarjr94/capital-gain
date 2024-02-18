@@ -1,6 +1,6 @@
 package services
 
-/*import (
+import (
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -13,7 +13,7 @@ type OperationService struct {
 	repo *OperationRepository
 }
 
-func NewOperationService(repo *OperationRepository) *OperationService {
+func NewOperationService(repo &OperationRepository) *OperationService {
 	return &OperationService{repo: repo}
 }
 
@@ -64,4 +64,4 @@ func main() {
 		os.Exit(1)
 	}
 }
-*/
+
