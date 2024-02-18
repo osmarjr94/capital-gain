@@ -4,64 +4,44 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 
 	"github.com/osmarjr94/capital-gain/cmd/api/models"
 )
 
 type OperationService struct {
-	repo *OperationRepository
+	repository *OperationRepository
 }
 
-func NewOperationService(repo &OperationRepository) *OperationService {
-	return &OperationService{repo: repo}
+func NewOperationService(repository &OperationRepository) *OperationService {
+	return &OperationService{repository: repository}
 }
 
-func (s *OperationService) ProcessOperations(operations []models.Operation) ([]models.TaxResult, error) {
-	// Implemente a lógica para processar as operações e calcular os impostos.
-	var taxResults []models.TaxResult
-
-	// Sua lógica de processamento de operações aqui...
-
-	return taxResults, nil
-}
-
-func main() {
-	repo := &OperationRepository{} // Instancie seu repositório com as dependências necessárias.
-	service := NewOperationService(repo)
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			break
-		}
-
-		var operations []models.Operation
-		if err := json.Unmarshal([]byte(line), &operations); err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing JSON: %v\n", err)
-			continue
-		}
-
-		taxResults, err := service.ProcessOperations(operations)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error processing operations: %v\n", err)
-			continue
-		}
-
-		taxResultsJSON, err := json.Marshal(taxResults)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error marshalling JSON: %v\n", err)
-			continue
-		}
-
-		fmt.Println(string(taxResultsJSON))
+func (os *OperationService) ProcessOperation(operation models.Operation) (int, error) {
+	if operation.Operation == "buy" {
+		return 0, os.repository.SaveOperation(operation)
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading standard input: %v\n", err)
-		os.Exit(1)
+	if operation.Operation != "sell" {
+		return 0, nil
 	}
-}
 
+	totalCost := operation.UnitCost * float64(operation.Quantity)
+	if totalCost <= 20000 {
+		return 0, os.repository.SaveOperation(operation)
+	}
+
+	weightedAverage, err := os.repository.GetWeightedAverage()
+	if err != nil {
+		return 0, err
+	}
+
+	profit := totalCost - (float64(operation.Quantity) * weightedAverage)
+	if profit <= 0 {
+		return 0, os.repository.SaveOperation(operation)
+	}
+
+	tax := int(math.Ceil(profit * 0.2))
+	return tax, os.repository.SaveOperation(operation)
+}

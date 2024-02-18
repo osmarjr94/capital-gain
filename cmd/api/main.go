@@ -2,7 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -10,31 +11,28 @@ import (
 )
 
 func main() {
-	// Read input from stdin
-	bytes, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatalf("Failed to read input: %v", err)
-	}
 
-	// Unmarshal JSON input
-	var operations []models.Operation
-	if err := json.Unmarshal(bytes, &operations); err != nil {
-		log.Fatalf("Failed to unmarshal input: %v", err)
-	}
+	repository := NewOperationRepository()
 
-	// Repository
-	repository := &OperationRepository{}
-
-	// Service
 	service := NewOperationService(repository)
 
-	// Controller
 	controller := NewOperationController(service)
 
-	// Process operations
+	bytes, err := io.ReadAll(io.Reader(os.Stdin))
+	if err != nil {
+		log.Fatalf("Erro ao ler a entrada padrão: %v", err)
+	}
+
+	var operations []models.Operation
+	if err := json.Unmarshal(bytes, &operations); err != nil {
+		log.Fatalf("Erro ao decodificar as operações do JSON: %v", err)
+	}
+
 	for _, op := range operations {
-		if err := controller.HandleOperation(op); err != nil {
-			log.Fatalf("Error processing operation: %v", err)
+		tax, err := controller.HandleOperation(op)
+		if err != nil {
+			log.Fatalf("Erro ao processar a operação: %v", err)
 		}
+		fmt.Printf("Imposto calculado para a operação %+v: %d\n", op, tax)
 	}
 }
