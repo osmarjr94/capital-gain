@@ -18,7 +18,7 @@ func NewOperationService(repository &OperationRepository) *OperationService {
 	return &OperationService{repository: repository}
 }
 
-func (os *OperationService) ProcessOperation(operation models.Operation) (int, error) {
+func (os *OperationService) ProcessOperation(operation []models.Operation) (int, error) {
 	if operation.Operation == "buy" {
 		return 0, os.repository.SaveOperation(operation)
 	}

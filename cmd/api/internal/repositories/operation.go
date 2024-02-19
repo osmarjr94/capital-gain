@@ -1,46 +1,23 @@
 package repositories
 
 import (
-	"errors"
-	"sync"
-
 	"github.com/osmarjr94/capital-gain/cmd/api/models"
 )
 
 type OperationRepository struct {
-	operations []models.Operation
-	mutex      sync.Mutex
+	// Aqui você pode adicionar qualquer dependência necessária, como uma conexão com o banco de dados
 }
 
 func NewOperationRepository() *OperationRepository {
 	return &OperationRepository{}
 }
 
-func (r *OperationRepository) SaveOperation(operation models.Operation) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-
-	r.operations = append(r.operations, operation)
+func (or *OperationRepository) SaveOperation(operation []models.Operation) error {
+	// Implemente a lógica para salvar a operação no banco de dados
 	return nil
 }
 
-func (r *OperationRepository) GetWeightedAverage() (float64, error) {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-
-	var totalQuantity int
-	var totalCost float64
-
-	for _, op := range r.operations {
-		if op.Operation == "buy" {
-			totalQuantity += op.Quantity
-			totalCost += op.UnitCost * float64(op.Quantity)
-		}
-	}
-
-	if totalQuantity == 0 {
-		return 0, errors.New("no buy operations found")
-	}
-
-	return totalCost / float64(totalQuantity), nil
+func (or *OperationRepository) GetWeightedAverage() (float64, error) {
+	// Implemente a lógica para obter a média ponderada do banco de dados
+	return 0, nil
 }
