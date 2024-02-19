@@ -1,16 +1,38 @@
 package main
 
-/*
-import(
-	"github.com/osmarjr94/capital-gain/cmd/api/controllers"
-	"github.com/osmarjr94/capital-gain/cmd/api/services"
-	"github.com/osmarjr94/capital-gain/cmd/api/repositories"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"os"
+
+	"github.com/osmarjr94/capital-gain/cmd/api/internal/models"
 )
 
 func main() {
-	repo := &OperationRepository{}
-	service := &OperationService{}
-	controller := NewOperationController(repo, service)
-	controller.ProcessOperations()
+
+	repository := NewOperationRepository()
+
+	service := NewOperationService(repository)
+
+	controller := NewOperationController(service)
+
+	bytes, err := io.ReadAll(io.Reader(os.Stdin))
+	if err != nil {
+		log.Fatalf("Erro ao ler a entrada padrão: %v", err)
+	}
+
+	var operations []models.Operation
+	if err := json.Unmarshal(bytes, &operations); err != nil {
+		log.Fatalf("Erro ao decodificar as operações do JSON: %v", err)
+	}
+
+	for _, op := range operations {
+		tax, err := controller.HandleOperation(op)
+		if err != nil {
+			log.Fatalf("Erro ao processar a operação: %v", err)
+		}
+		fmt.Printf("Imposto calculado para a operação %+v: %d\n", op, tax)
+	}
 }
-*/
