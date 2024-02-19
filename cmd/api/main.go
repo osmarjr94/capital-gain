@@ -1,38 +1,24 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"os"
+	"echo"
 
-	"github.com/osmarjr94/capital-gain/cmd/api/internal/models"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
 
-	repository := NewOperationRepository()
+	e := echo.New()
 
-	service := NewOperationService(repository)
+	RegisterRoutes(e)
 
+	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func RegisterRoutes(e *echo.Echo) {
+	repo := NewOperationRepository()
+	service := NewOperationService(repo)
 	controller := NewOperationController(service)
 
-	bytes, err := io.ReadAll(io.Reader(os.Stdin))
-	if err != nil {
-		log.Fatalf("Erro ao ler a entrada padrão: %v", err)
-	}
-
-	var operations []models.Operation
-	if err := json.Unmarshal(bytes, &operations); err != nil {
-		log.Fatalf("Erro ao decodificar as operações do JSON: %v", err)
-	}
-
-	for _, op := range operations {
-		tax, err := controller.HandleOperation(op)
-		if err != nil {
-			log.Fatalf("Erro ao processar a operação: %v", err)
-		}
-		fmt.Printf("Imposto calculado para a operação %+v: %d\n", op, tax)
-	}
+	e.POST("/operation", controller.HandleOperation)
 }
